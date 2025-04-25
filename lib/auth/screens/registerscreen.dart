@@ -12,7 +12,7 @@ class SignUpScreen extends StatelessWidget {
       body: Column(
         children: [
           // Header
-          const AuthHeader(title: 'Sign Up'),
+          const AuthHeader(title: 'Sign! Up'),
           // Form and Footer
           Expanded(
             child: Padding(
