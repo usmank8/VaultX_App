@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.2
+  sdk: ^3.5.2
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -36,6 +36,11 @@ dependencies:
   cupertino_icons: ^1.0.8
   fluttertoast: ^8.2.4 # or the latest version
   flutter_icon_snackbar: ^1.2.1
+  google_fonts:
+  font_awesome_flutter: ^10.3.0 # or the latest version
+  animated_notch_bottom_bar: ^1.0.3
+  flutter_svg: ^2.1.0
+  share_plus: ^11.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
+import 'package:vaultx_solution/auth/screens/profile_registration.dart';
 import 'app_theme.dart';
 
 void main() {
@@ -14,7 +15,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Auth App',
       theme: AppTheme.theme,
-      home: const LoginScreen(),
+      debugShowCheckedModeBanner: false,
+      home: const LoginPage(),
     );
   }
 }
