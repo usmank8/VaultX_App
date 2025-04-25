@@ -13,7 +13,7 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(70),
-        child: CustomAppBar(),
+        child: CustomAppBar(showBackButton: true),
       ),
       backgroundColor: Colors.white,
       body: Padding(

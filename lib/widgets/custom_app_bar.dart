@@ -1,9 +1,15 @@
+// lib/widgets/custom_app_bar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vaultx_solution/widgets/profile_dropdown.dart';
+import 'profile_dropdown.dart';
 
 class CustomAppBar extends StatelessWidget {
-  const CustomAppBar({super.key});
+  final bool showBackButton;
+  
+  const CustomAppBar({
+    Key? key, 
+    this.showBackButton = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,12 +17,20 @@ class CustomAppBar extends StatelessWidget {
       elevation: 0.5,
       backgroundColor: Colors.white,
       titleSpacing: 16,
+      leading: showBackButton ? IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+      ) : null,
       title: Row(
         children: [
           Image.asset('assets/vx_logo.png', height: 40), // Your logo
           const Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, '/notifications');
+            },
             icon: SvgPicture.asset(
               'assets/notification.svg',
               height: 24,
@@ -55,15 +69,11 @@ class CustomAppBar extends StatelessWidget {
 
   void _showProfileDropdown(BuildContext context) {
     final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay =
-        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
-        button.localToGlobal(
-            Offset(button.size.width - 250, button.size.height + 10),
-            ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero),
-            ancestor: overlay),
+        button.localToGlobal(Offset(button.size.width - 250, button.size.height + 10), ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
       ),
       Offset.zero & overlay.size,
     );
@@ -78,7 +88,7 @@ class CustomAppBar extends StatelessWidget {
         PopupMenuItem<String>(
           padding: EdgeInsets.zero,
           child: ProfileDropdown(
-            userName: "Usman Khalil",
+            userName: "Jennifer Lopez",
             userImage: "assets/profile.png",
             onClose: () => Navigator.pop(context),
           ),
