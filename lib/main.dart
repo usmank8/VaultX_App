@@ -1,72 +1,57 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
-import 'package:vaultx_solution/auth/screens/registerscreen.dart';
-import 'package:vaultx_solution/screens/guest_registration_confirmed.dart';
+import 'package:vaultx_solution/auth/screens/profile_registration.dart';
+import 'package:vaultx_solution/screens/change_password_page.dart';
 import 'package:vaultx_solution/screens/home_page.dart';
-import 'package:vaultx_solution/screens/otp_screen.dart';
-import 'package:vaultx_solution/screens/vehicle_registration.dart';
-import 'app_theme.dart';
+import 'package:vaultx_solution/screens/edit_profile_screen.dart';
 
-import 'widgets/main_layout.dart';
+import 'screens/splash_scree.dart';
 
 void main() {
+  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'VaultX Solution',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        primaryColor: Color(0xFFD6A19F),
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.black),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFFD6A19F),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        ),
+      ),
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
-      title: 'Visitor Management',
-      theme: AppTheme.theme,
-      initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginPage(),
-        '/register': (context) => const AuthPage(),
-        '/home': (context) => const MainLayout(initialIndex: 0),
-        '/notifications': (context) => const MainLayout(initialIndex: 1),
-        '/guest-registration': (context) => const MainLayout(initialIndex: 2),
-      },
-      onGenerateRoute: (settings) {
-        // Handle other routes that need the bottom navigation bar
-        if (!settings.name!.contains('/login') && 
-            !settings.name!.contains('/register')) {
-          return MaterialPageRoute(
-            builder: (context) {
-              // Determine which screen to show based on the route
-              Widget child;
-              int navIndex = 0;
-              
-              if (settings.name == '/guest-registration-confirmed') {
-                // Import and use the appropriate screen
-              
-                child = const GuestConfirmationPage();
-              } else if (settings.name == '/vehicle-registration') {
-             
-                child = const VehicleRegistrationPage();
-              } else if (settings.name == '/otp-screen') {
-                
-                child = const OtpScreen();
-              } else {
-                // Default to home page
-               
-                child = const DashboardPage();
-              }
-              
-              return MainLayout(initialIndex: navIndex, child: child);
-            },
-          );
-        }
-        
-        // For login and register screens, don't use the MainLayout
-        return null;
+        '/profile': (context) => const ProfileRegistrationPage(),
+        '/dashboard': (context) => const DashboardPage(),
+        '/edit-profile': (context) => const EditProfileScreen(),
+        '/change-password': (context) => const ChangePasswordScreen(),
       },
     );
   }

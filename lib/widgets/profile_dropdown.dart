@@ -5,12 +5,18 @@ class ProfileDropdown extends StatelessWidget {
   final String userName;
   final String userImage;
   final VoidCallback onClose;
+  final VoidCallback onLogout;
+  final VoidCallback onEditProfile;
+  final VoidCallback onChangePassword;
   
   const ProfileDropdown({
     Key? key,
     required this.userName,
     required this.userImage,
     required this.onClose,
+    required this.onLogout,
+    required this.onEditProfile,
+    required this.onChangePassword,
   }) : super(key: key);
 
   @override
@@ -33,7 +39,14 @@ class ProfileDropdown extends StatelessWidget {
             CircleAvatar(
               radius: 40,
               backgroundColor: const Color(0xFFE6E9F5), // Light purple background
-              backgroundImage: AssetImage(userImage),
+              child: Text(
+                userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF6D213C),
+                ),
+              ),
             ),
             const SizedBox(height: 12),
             
@@ -50,25 +63,19 @@ class ProfileDropdown extends StatelessWidget {
             
             // Menu items
             _buildMenuItem(
-              icon: 'assets/profile_edit.svg',
+              icon: Icons.edit,
               title: 'Edit Profile',
               iconColor: const Color(0xFFFBD3D2), // Light pink
-              onTap: () {
-                // Handle edit profile
-                Navigator.pop(context);
-              },
+              onTap: onEditProfile,
             ),
             
             const Divider(height: 1, thickness: 1, color: Color(0xFFF5F5F5)),
             
             _buildMenuItem(
-              icon: 'assets/password.svg',
+              icon: Icons.lock,
               title: 'Change Password',
               iconColor: const Color(0xFFFBD3D2), // Light pink
-              onTap: () {
-                // Handle change password
-                Navigator.pop(context);
-              },
+              onTap: onChangePassword,
             ),
             
             const Divider(height: 1, thickness: 1, color: Color(0xFFF5F5F5)),
@@ -77,17 +84,21 @@ class ProfileDropdown extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
               child: InkWell(
-                onTap: () {
-                  // Handle logout
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  'Log out',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
+                onTap: onLogout,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.logout, size: 18, color: Colors.red.shade400),
+                    SizedBox(width: 8),
+                    Text(
+                      'Log out',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red.shade400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -98,7 +109,7 @@ class ProfileDropdown extends StatelessWidget {
   }
 
   Widget _buildMenuItem({
-    required String icon,
+    required IconData icon,
     required String title,
     required Color iconColor,
     required VoidCallback onTap,
@@ -118,10 +129,9 @@ class ProfileDropdown extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
-                child: SvgPicture.asset(
+                child: Icon(
                   icon,
-                  width: 20,
-                  height: 20,
+                  size: 20,
                   color: const Color(0xFFE57373), // Darker pink for the icon
                 ),
               ),
