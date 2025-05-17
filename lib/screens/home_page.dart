@@ -125,14 +125,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: CustomAppBar(
           showBackButton: false,
           userProfile: _userProfile,
-          actions: [
-            // Add refresh button
-            IconButton(
-              icon: Icon(Icons.refresh, color: Color(0xFF600f0f)),
-              onPressed: _isLoading ? null : _loadData,
-              tooltip: 'Refresh',
-            ),
-          ],
+          onRefresh: _isLoading ? null : _loadData,
         ),
       ),
       backgroundColor: Colors.white,
