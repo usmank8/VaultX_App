@@ -1,5 +1,6 @@
 // lib/auth/screens/login_page.dart
 import 'package:flutter/material.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/sign_in_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/auth/screens/profile_registration.dart';
@@ -283,10 +284,7 @@ class _LoginPageState extends State<LoginPage> {
                               ? const SizedBox(
                                   height: 24,
                                   width: 24,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    strokeWidth: 2,
-                                  ),
+                                  child: UnderReviewScreen()
                                 )
                               : const Text("Login",
                                   style:

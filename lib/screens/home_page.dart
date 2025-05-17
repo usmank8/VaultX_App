@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/screens/guest_registration.dart';
 import 'package:vaultx_solution/screens/vehicle_registration.dart';
 import 'package:vaultx_solution/screens/otp_screen.dart';
@@ -136,11 +137,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       backgroundColor: Colors.white,
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFD6A19F),
-              ),
-            )
+          ? Center(child: UnderReviewScreen())
           : _error != null
               ? Center(
                   child: Column(
@@ -337,7 +334,7 @@ class _DashboardPageState extends State<DashboardPage> {
         currentIndex: 0,
         onTap: (index) {
           // Handle navigation bar taps
-          if (index == 2) {
+          if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -347,9 +344,7 @@ class _DashboardPageState extends State<DashboardPage> {
         },
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: 'Overview'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: 'Notification'),
+              icon: Icon(Icons.dashboard), label: 'Overvieww'),
           BottomNavigationBarItem(
               icon: Icon(Icons.person_add), label: 'Add Guest'),
         ],

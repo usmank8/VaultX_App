@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/guest_model.dart';
 import 'package:vaultx_solution/screens/guest_registration_confirmed.dart';
 import 'package:vaultx_solution/screens/guest_vehicle_registration.dart';
@@ -387,10 +388,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                         ? SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                            child:UnderReviewScreen()
                           )
                         : const Text(
                             'Submit',

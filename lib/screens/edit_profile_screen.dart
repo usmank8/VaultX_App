@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/create_profile_model.dart';
 import 'package:vaultx_solution/models/update_profile_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
@@ -148,7 +149,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Color(0xFFD6A19F)))
+          ? Center(child: UnderReviewScreen())
           : _error != null && _profile == null
               ? Center(
                   child: Column(
@@ -281,7 +282,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             child: _isSaving
-                                ? CircularProgressIndicator(color: Colors.white)
+                                ? UnderReviewScreen()
                                 : Text(
                                     "Save Changes",
                                     style: TextStyle(

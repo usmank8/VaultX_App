@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/create_profile_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/screens/home_page.dart';     // DashboardPage
@@ -334,7 +335,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _loading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const UnderReviewScreen()
                     : Text(
                         _completionPercentage == 1.0 
                           ? "Submit" 

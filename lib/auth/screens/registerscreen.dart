@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/sign_up_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
 
@@ -209,10 +210,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ? const SizedBox(
                               height: 24,
                               width: 24,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                strokeWidth: 2,
-                              ),
+                              child:UnderReviewScreen(),
                             )
                           : const Text("Sign Up", 
                               style: TextStyle(fontWeight: FontWeight.bold)),

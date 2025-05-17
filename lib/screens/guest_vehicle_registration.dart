@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/guest_model.dart';
 import 'package:vaultx_solution/widgets/custom_app_bar.dart';
 
@@ -193,7 +194,7 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
+                      ? UnderReviewScreen()
                       : Text(
                           "Add Vehicle",
                           style: TextStyle(fontWeight: FontWeight.bold),

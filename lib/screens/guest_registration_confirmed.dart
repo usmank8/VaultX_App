@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/widgets/custom_app_bar.dart';
 
 class GuestConfirmationPage extends StatefulWidget {
@@ -87,10 +88,7 @@ class _GuestConfirmationPageState extends State<GuestConfirmationPage> {
                       ? SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          child: UnderReviewScreen()
                         )
                       : const Text(
                           'Generate QR Code',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/update_password_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/widgets/custom_app_bar.dart';
@@ -250,10 +251,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ? SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
+                          child:UnderReviewScreen()
                         )
                       : Text(
                           "Update Password",

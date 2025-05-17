@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/vehicle_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/widgets/custom_app_bar.dart';
@@ -211,7 +212,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
+                      ? UnderReviewScreen()
                       : Text(
                           "Submit",
                           style: TextStyle(fontWeight: FontWeight.bold),

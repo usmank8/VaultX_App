@@ -13,27 +13,28 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animation for logo
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _animation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
     );
-    
+
     _controller.forward();
-    
+
     // Check auth status after a short delay
     Future.delayed(Duration(seconds: 2), () {
       _checkAuthStatus();
@@ -48,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _checkAuthStatus() async {
     final _api = ApiService();
-    
+
     try {
       // Check if token exists in SharedPreferences
       SharedPreferences prefs;
@@ -59,22 +60,22 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         _navigateToLogin();
         return;
       }
-      
+
       final token = prefs.getString('jwt_token');
-      
+
       if (token == null) {
         // No token, go to login
         _navigateToLogin();
         return;
       }
-      
+
       // Set token in memory for immediate use
       _api.setInMemoryToken(token);
-      
+
       // Verify token by trying to get profile
       try {
         final profile = await _api.getProfile();
-        
+
         if (profile == null) {
           // Token is valid but no profile exists
           _navigateToProfileRegistration();
@@ -84,13 +85,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         }
       } catch (e) {
         debugPrint('Error verifying token: $e');
-        
+
         // Token might be invalid or expired
         try {
           // Clear invalid token
           await prefs.remove('jwt_token');
         } catch (_) {}
-        
+
         _navigateToLogin();
       }
     } catch (e) {
@@ -128,56 +129,49 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo with fade-in animation
-            FadeTransition(
-              opacity: _animation,
-              child: ScaleTransition(
-                scale: _animation,
-                child: Image.asset(
-                  'assets/logo.png', // Make sure this asset exists
-                  width: 150,
-                  height: 150,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback if logo asset is missing
-                    return Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFD6A19F),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          'VaultX',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+            // Logo with rotation animation
+            RotationTransition(
+              turns: _controller,
+              child: Image.asset(
+                'assets/loading.png', // Make sure this asset exists
+                width: 160,
+                height: 120,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback if logo asset is missing
+                  return Container(
+                    width: 160,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFD6A19F),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        'VaultX',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
-            SizedBox(height: 30),
-            // App name with fade-in animation
-            FadeTransition(
-              opacity: _animation,
+            SizedBox(height: 80),
+            // Welcome text
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
               child: Text(
-                'VaultX Solution',
+                "Welcome to VaultX",
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF5C0D0D),
+                  color: Color(0xFF4B0D0D), // Maroon color
                 ),
               ),
-            ),
-            SizedBox(height: 50),
-            // Loading indicator
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD6A19F)),
             ),
           ],
         ),
