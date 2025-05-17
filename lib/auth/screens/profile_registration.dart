@@ -30,7 +30,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
   String? _error;
   double _completionPercentage = 0.0;
 
-  // Define required fields for validation
+  
   final List<String> _residenceOptions = ['House', 'Apartment', 'Flat'];
   final List<String> _residenceTypeOptions = ['Owned', 'Rented'];
 
