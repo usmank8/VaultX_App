@@ -16,7 +16,7 @@ class _UnderReviewScreenState extends State<UnderReviewScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(); // Infinite rotation
   }
@@ -47,7 +47,7 @@ class _UnderReviewScreenState extends State<UnderReviewScreen>
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Text(
-                "Hang tight! Your account is under review by the society team!!",
+                "Loading......",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,

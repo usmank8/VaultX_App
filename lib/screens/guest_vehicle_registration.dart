@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:vaultx_solution/loading/loading.dart';
-import 'package:vaultx_solution/models/vehicle_model.dart';
-import 'package:vaultx_solution/services/api_service.dart';
+import 'package:vaultx_solution/models/guest_model.dart';
 import 'package:vaultx_solution/widgets/custom_app_bar.dart';
 
-class VehicleRegistrationPage extends StatefulWidget {
-  const VehicleRegistrationPage({super.key});
+class GuestVehicleRegistrationPage extends StatefulWidget {
+  final Function(GuestVehicleModel) onVehicleAdded;
+  
+  const GuestVehicleRegistrationPage({
+    Key? key,
+    required this.onVehicleAdded,
+  }) : super(key: key);
 
   @override
-  _VehicleRegistrationPageState createState() => _VehicleRegistrationPageState();
+  _GuestVehicleRegistrationPageState createState() => _GuestVehicleRegistrationPageState();
 }
 
-class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
+class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final _vehicleNameController = TextEditingController();
   final _vehicleModelController = TextEditingController();
@@ -20,7 +24,6 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
   final _vehicleColorController = TextEditingController();
   String _vehicleType = 'Sedan'; // Default value
   
-  final ApiService _apiService = ApiService();
   bool _isLoading = false;
   String? _errorMessage;
   
@@ -36,7 +39,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
     super.dispose();
   }
 
-  Future<void> _submitVehicle() async {
+  void _submitVehicle() {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -45,36 +48,20 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
     });
 
     try {
-      final vehicleModel = VehicleModel(
+      final vehicleModel = GuestVehicleModel(
         vehicleName: _vehicleNameController.text.trim(),
         vehicleModel: _vehicleModelController.text.trim(),
         vehicleLicensePlateNumber: _licensePlateController.text.trim(),
         vehicleType: _vehicleType,
-        RFIDTagID: _rfidTagController.text.trim(),
+        vehicleRFIDTagId: _rfidTagController.text.trim().isEmpty ? null : _rfidTagController.text.trim(),
         vehicleColor: _vehicleColorController.text.trim(),
       );
 
-      await _apiService.addVehicle(vehicleModel);
+      // Pass the vehicle data back to the parent
+      widget.onVehicleAdded(vehicleModel);
       
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: const [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 10),
-                Text('Vehicle added successfully!'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-        
-        // Navigate back to refresh the vehicle list
-        Navigator.pop(context, true);
-      }
+      // Navigate back
+      Navigator.pop(context);
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceFirst('Exception: ', '');
@@ -106,7 +93,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Vehicle Registration',
+                'Guest Vehicle Registration',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -166,14 +153,9 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
               
               _buildInputField(
                 controller: _rfidTagController,
-                label: "RFID Tag ID",
-                hint: "Enter RFID tag ID",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter RFID tag ID';
-                  }
-                  return null;
-                },
+                label: "RFID Tag ID (Optional)",
+                hint: "Enter RFID tag ID if available",
+                validator: null, // Optional field
               ),
               
               _buildInputField(
@@ -214,7 +196,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
                   child: _isLoading
                       ? UnderReviewScreen()
                       : Text(
-                          "Submit",
+                          "Add Vehicle",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                 ),
@@ -230,7 +212,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
     required TextEditingController controller,
     required String label,
     required String hint,
-    required String? Function(String?) validator,
+    required String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
