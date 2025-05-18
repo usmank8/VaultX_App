@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vaultx_solution/screens/guest_registration_confirmed.dart';
 
 class GuestRegistrationForm extends StatefulWidget {
-  const GuestRegistrationForm({Key? key}) : super(key: key);
+  const GuestRegistrationForm({super.key});
 
   @override
   State<GuestRegistrationForm> createState() => _GuestRegistrationFormState();
