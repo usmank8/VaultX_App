@@ -8,7 +8,7 @@ import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/widgets/custom_app_bar.dart';
 
 class GuestRegistrationForm extends StatefulWidget {
-  const GuestRegistrationForm({Key? key}) : super(key: key);
+  const GuestRegistrationForm({super.key});
 
   @override
   State<GuestRegistrationForm> createState() => _GuestRegistrationFormState();
