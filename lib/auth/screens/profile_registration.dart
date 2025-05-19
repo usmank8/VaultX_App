@@ -80,7 +80,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
         });
       }
     } catch (e) {
-      // Ignore errors, just let user continue with profile registration
+   
       debugPrint('Error checking existing profile: $e');
     }
   }

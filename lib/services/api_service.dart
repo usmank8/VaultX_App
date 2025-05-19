@@ -21,9 +21,9 @@ class ApiService {
   // 2) Base URL switches for Android vs iOS/web
   String get _baseUrl {
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3008';
+      return 'https://vaultx-be-main.onrender.com';
     } else {
-      return 'http://localhost:3008';
+      return 'https://vaultx-be-main.onrender.com';
     }
   }
 
