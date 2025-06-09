@@ -3,7 +3,8 @@ import 'package:vaultx_solution/auth/screens/loginscreen.dart';
 import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/create_profile_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
-import 'package:vaultx_solution/screens/home_page.dart';     // DashboardPage
+import 'package:vaultx_solution/screens/home_page.dart'; // DashboardPage
+import 'package:vaultx_solution/screens/otp_screen.dart'; // Import OtpScreen
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
@@ -16,37 +17,36 @@ class ProfileRegistrationPage extends StatefulWidget {
 }
 
 class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
-  final _firstNameCtrl      = TextEditingController();
-  final _lastNameCtrl       = TextEditingController();
-  final _phoneCtrl          = TextEditingController();
-  final _cnicCtrl           = TextEditingController();
-  final _blockCtrl          = TextEditingController();
-  final _addressCtrl        = TextEditingController();
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _cnicCtrl = TextEditingController();
+  final _blockCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
   String? _residenceChoice;
   String? _residenceTypeChoice;
 
-  final _api       = ApiService();
-  bool _loading    = false;
+  final _api = ApiService();
+  bool _loading = false;
   String? _error;
   double _completionPercentage = 0.0;
 
-  
   final List<String> _residenceOptions = ['House', 'Apartment', 'Flat'];
   final List<String> _residenceTypeOptions = ['Owned', 'Rented'];
 
   @override
   void initState() {
     super.initState();
-    
+
     // Check if profile already exists, if so redirect to dashboard
     _checkExistingProfile();
-    
+
     // Set default values for dropdowns
     setState(() {
       _residenceChoice = 'house';
       _residenceTypeChoice = 'owned';
     });
-    
+
     // Add listeners to all text controllers to update completion percentage
     _firstNameCtrl.addListener(_updateCompletionPercentage);
     _lastNameCtrl.addListener(_updateCompletionPercentage);
@@ -68,7 +68,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Short delay to show the message
         Future.delayed(Duration(seconds: 1), () {
           if (mounted) {
@@ -80,7 +80,6 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
         });
       }
     } catch (e) {
-   
       debugPrint('Error checking existing profile: $e');
     }
   }
@@ -94,7 +93,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     _cnicCtrl.removeListener(_updateCompletionPercentage);
     _blockCtrl.removeListener(_updateCompletionPercentage);
     _addressCtrl.removeListener(_updateCompletionPercentage);
-    
+
     // Dispose controllers
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
@@ -109,27 +108,27 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     // Total number of fields to complete
     const int totalFields = 8;
     int completedFields = 0;
-    
+
     // Check each field
     if (_firstNameCtrl.text.trim().isNotEmpty) completedFields++;
     if (_lastNameCtrl.text.trim().isNotEmpty) completedFields++;
-    
+
     // Phone validation (Pakistani format)
     final RegExp phoneRegex = RegExp(r'^\+?92[0-9]{10}$|^0[0-9]{10}$');
     if (phoneRegex.hasMatch(_phoneCtrl.text.trim())) completedFields++;
-    
+
     // CNIC validation (13 digits)
     final RegExp cnicRegex = RegExp(r'^\d{13}$');
     if (cnicRegex.hasMatch(_cnicCtrl.text.trim())) completedFields++;
-    
+
     if (_blockCtrl.text.trim().isNotEmpty) completedFields++;
     if (_addressCtrl.text.trim().isNotEmpty) completedFields++;
     if (_residenceChoice != null) completedFields++;
     if (_residenceTypeChoice != null) completedFields++;
-    
+
     // Calculate percentage
     final newPercentage = completedFields / totalFields;
-    
+
     // Update state if percentage changed
     if (newPercentage != _completionPercentage) {
       setState(() {
@@ -141,7 +140,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
   Future<void> _onSubmit() async {
     setState(() {
       _loading = true;
-      _error   = null;
+      _error = null;
     });
 
     // Debug the token before submission
@@ -185,13 +184,14 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     }
 
     final dto = CreateProfileModel(
-      firstname:     _firstNameCtrl.text.trim(),
-      lastname:      _lastNameCtrl.text.trim(),
-      phonenumber:   _phoneCtrl.text.trim(),
-      cnic:          _cnicCtrl.text.trim(),
-      address:       _addressCtrl.text.trim(),
-      block:         _blockCtrl.text.trim(),
-      residence:     _residenceChoice!.toLowerCase(),
+      firstname: _firstNameCtrl.text.trim(),
+      lastname: _lastNameCtrl.text.trim(),
+      phonenumber: _phoneCtrl.text.trim(),
+      email: '',
+      cnic: _cnicCtrl.text.trim(),
+      address: _addressCtrl.text.trim(),
+      block: _blockCtrl.text.trim(),
+      residence: _residenceChoice!.toLowerCase(),
       residenceType: _residenceTypeChoice!.toLowerCase(),
     );
 
@@ -200,7 +200,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
       await _api.createProfile(dto);
 
       if (!mounted) return;
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -215,11 +215,13 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
           duration: const Duration(seconds: 2),
         ),
       );
-      
-      // Navigate directly to dashboard
+
+      // Navigate to OTP verification screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardPage()),
+        MaterialPageRoute(
+          builder: (_) => OtpScreen(email: dto.email),
+        ),
       );
     } catch (e) {
       setState(() {
@@ -234,7 +236,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
   Widget build(BuildContext context) {
     // Format completion percentage for display
     final completionText = "${(_completionPercentage * 100).toInt()}%";
-    
+
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
@@ -286,10 +288,11 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
               ],
             ),
 
-            _buildInput(_phoneCtrl, label: "Phone Number", 
-              helperText: "Format: +92XXXXXXXXXX or 03XXXXXXXXX"),
-            _buildInput(_cnicCtrl, label: "CNIC Number", 
-              helperText: "13 digits without dashes"),
+            _buildInput(_phoneCtrl,
+                label: "Phone Number",
+                helperText: "Format: +92XXXXXXXXXX or 03XXXXXXXXX"),
+            _buildInput(_cnicCtrl,
+                label: "CNIC Number", helperText: "13 digits without dashes"),
             _buildInput(_blockCtrl, label: "Block"),
             _buildInput(_addressCtrl, label: "Street Number / Address"),
 
@@ -324,9 +327,9 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _completionPercentage == 1.0 && !_loading 
-                  ? _onSubmit 
-                  : null,
+                onPressed: _completionPercentage == 1.0 && !_loading
+                    ? _onSubmit
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD6A19F),
                   disabledBackgroundColor: Colors.grey.shade300,
@@ -337,14 +340,14 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
                 child: _loading
                     ? const UnderReviewScreen()
                     : Text(
-                        _completionPercentage == 1.0 
-                          ? "Submit" 
-                          : "Complete all fields to continue",
+                        _completionPercentage == 1.0
+                            ? "Submit"
+                            : "Complete all fields to continue",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _completionPercentage == 1.0 
-                            ? Colors.white 
-                            : Colors.grey.shade700,
+                          color: _completionPercentage == 1.0
+                              ? Colors.white
+                              : Colors.grey.shade700,
                         ),
                       ),
               ),
@@ -406,7 +409,8 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
               decoration: const InputDecoration(border: InputBorder.none),
               hint: Text(label),
               items: options
-                  .map((opt) => DropdownMenuItem(value: opt.toLowerCase(), child: Text(opt)))
+                  .map((opt) => DropdownMenuItem(
+                      value: opt.toLowerCase(), child: Text(opt)))
                   .toList(),
               onChanged: onChanged,
             ),

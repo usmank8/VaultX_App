@@ -67,4 +67,35 @@ class AuthenticatedClient extends http.BaseClient {
 
     return _inner.send(request);
   }
+
+  // Save isApprovedBySocietyAdmin flag to SharedPreferences
+  Future<void> setIsApprovedBySocietyAdmin(bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isApprovedBySocietyAdmin', value);
+    } catch (e) {
+      debugPrint('Error saving isApprovedBySocietyAdmin: $e');
+    }
+  }
+
+  // Get isApprovedBySocietyAdmin flag from SharedPreferences
+  Future<bool?> getIsApprovedBySocietyAdmin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('isApprovedBySocietyAdmin');
+    } catch (e) {
+      debugPrint('Error accessing isApprovedBySocietyAdmin: $e');
+      return null;
+    }
+  }
+
+  // Clear isApprovedBySocietyAdmin flag (for logout)
+  Future<void> clearIsApprovedBySocietyAdmin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('isApprovedBySocietyAdmin');
+    } catch (e) {
+      debugPrint('Error clearing isApprovedBySocietyAdmin: $e');
+    }
+  }
 }

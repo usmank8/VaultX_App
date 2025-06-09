@@ -6,6 +6,8 @@ import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/auth/screens/profile_registration.dart';
 import 'package:vaultx_solution/auth/screens/registerscreen.dart';
 import 'package:vaultx_solution/screens/home_page.dart';
+import 'package:vaultx_solution/screens/pending_approval_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,94 +34,97 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _onLogin() async {
-  // Validate form first
-  if (!_formKey.currentState!.validate()) {
-    return;
-  }
-
-  setState(() {
-    _loading = true;
-    _error = null;
-  });
-
-  try {
-    // Login and get token
-    final token = await _api.login(SignInModel(
-      email: _emailCtrl.text.trim(),
-      password: _passCtrl.text,
-    ));
-    
-    // Store token in memory
-    if (token != null) {
-      _api.setInMemoryToken(token);
-      _api.debugToken(); // Debug token to verify it's set correctly
-    }
-    
-    if (!mounted) return;
-    
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: const [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 10),
-            Text('Login successful!'),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-    );
-    
-    // Check if profile exists
+    setState(() => _loading = true);
     try {
-      final profile = await _api.getProfile();
-      
-      if (profile != null) {
-        // Profile exists, go to dashboard
+      // Login and get token
+      final token = await _api.login(SignInModel(
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
+      ));
+
+      // Store token in memory
+      if (token != null) {
+        _api.setInMemoryToken(token);
+        _api.debugToken(); // Debug token to verify it's set correctly
+      }
+
+      if (!mounted) return;
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: const [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 10),
+              Text('Login successful!'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      final isApproved = prefs.getBool('isApprovedBySocietyAdmin') ?? false;
+
+      if (!isApproved) {
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardPage()),
+          MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
         );
-      } else {
-        // No profile, go to profile registration
+        return; // Prevent further navigation
+      }
+
+      // Check if profile exists
+      try {
+        final profile = await _api.getProfile();
+
+        if (profile != null) {
+          // Profile exists, go to dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardPage()),
+          );
+        } else {
+          // No profile, go to profile registration
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileRegistrationPage()),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error checking profile: $e');
+        // Error checking profile, default to profile registration
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const ProfileRegistrationPage()),
         );
       }
     } catch (e) {
-      debugPrint('Error checking profile: $e');
-      // Error checking profile, default to profile registration
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ProfileRegistrationPage()),
-      );
-    }
-  } catch (e) {
-    // Format error message to be more user-friendly
-    String errorMsg = e.toString();
-    if (errorMsg.contains('Invalid credentials')) {
-      errorMsg = 'Invalid email or password';
-    } else if (errorMsg.contains('network')) {
-      errorMsg = 'Network error. Please check your connection';
-    } else {
-      errorMsg = errorMsg.replaceAll('Exception: ', '');
-      if (errorMsg.length > 100) {
-        errorMsg = 'Login failed. Please try again later';
+      // Format error message to be more user-friendly
+      String errorMsg = e.toString();
+      if (errorMsg.contains('Invalid credentials')) {
+        errorMsg = 'Invalid email or password';
+      } else if (errorMsg.contains('network')) {
+        errorMsg = 'Network error. Please check your connection';
+      } else {
+        errorMsg = errorMsg.replaceAll('Exception: ', '');
+        if (errorMsg.length > 100) {
+          errorMsg = 'Login failed. Please try again later';
+        }
       }
+
+      setState(() => _error = errorMsg);
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-    
-    setState(() => _error = errorMsg);
-  } finally {
-    if (mounted) setState(() => _loading = false);
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +152,8 @@ class _LoginPageState extends State<LoginPage> {
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 32),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -183,8 +188,8 @@ class _LoginPageState extends State<LoginPage> {
                             filled: true,
                             fillColor: const Color(0xFFFFF1ED),
                             hintText: "Enter email",
-                            prefixIcon:
-                                const Icon(Icons.mail_outline, color: Colors.red),
+                            prefixIcon: const Icon(Icons.mail_outline,
+                                color: Colors.red),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide.none,
@@ -194,7 +199,8 @@ class _LoginPageState extends State<LoginPage> {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email';
                             }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                .hasMatch(value)) {
                               return 'Please enter a valid email';
                             }
                             return null;
@@ -214,15 +220,14 @@ class _LoginPageState extends State<LoginPage> {
                             filled: true,
                             fillColor: const Color(0xFFFFF1ED),
                             hintText: "Enter password",
-                            prefixIcon:
-                                const Icon(Icons.lock_outline, color: Colors.red),
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: Colors.red),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword 
-                                  ? Icons.visibility_off_outlined 
-                                  : Icons.visibility_outlined,
-                                color: Colors.red
-                              ),
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: Colors.red),
                               onPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;
@@ -264,7 +269,8 @@ class _LoginPageState extends State<LoginPage> {
                                 Expanded(
                                   child: Text(
                                     _error!,
-                                    style: TextStyle(color: Colors.red.shade800),
+                                    style:
+                                        TextStyle(color: Colors.red.shade800),
                                   ),
                                 ),
                               ],
@@ -275,7 +281,7 @@ class _LoginPageState extends State<LoginPage> {
                         ElevatedButton(
                           onPressed: _loading ? null : _onLogin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD6A19F),
+                            backgroundColor: Colors.redAccent,
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14)),
@@ -284,7 +290,11 @@ class _LoginPageState extends State<LoginPage> {
                               ? const SizedBox(
                                   height: 24,
                                   width: 24,
-                                  child: UnderReviewScreen()
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
                                 )
                               : const Text("Login",
                                   style:
@@ -314,31 +324,33 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
 
-                        const SizedBox(height: 32),
-                        const Center(child: Text("OR CONTINUE WITH")),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 65),
+                        //uncomment if you want to add social login options
 
-                        // Social buttons (optional)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: Image.network(
-                                'https://img.icons8.com/color/48/google-logo.png',
-                                width: 30,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Image.network(
-                                'https://img.icons8.com/color/48/facebook-new.png',
-                                width: 30,
-                              ),
-                            ),
-                          ],
-                        ),
+                        // const Center(child: Text("OR CONTINUE WITH")),
+                        // const SizedBox(height: 16),
+
+                        // // Social buttons (optional)
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.center,
+                        //   children: [
+                        //     IconButton(
+                        //       onPressed: () {},
+                        //       icon: Image.network(
+                        //         'https://img.icons8.com/color/48/google-logo.png',
+                        //         width: 30,
+                        //       ),
+                        //     ),
+                        //     const SizedBox(width: 20),
+                        //     IconButton(
+                        //       onPressed: () {},
+                        //       icon: Image.network(
+                        //         'https://img.icons8.com/color/48/facebook-new.png',
+                        //         width: 30,
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),

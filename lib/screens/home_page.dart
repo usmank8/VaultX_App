@@ -390,13 +390,14 @@ class _DashboardPageState extends State<DashboardPage> {
         margin: const EdgeInsets.symmetric(horizontal: 6),
         child: OutlinedButton.icon(
           onPressed: () {
-            if (text == "Generate OTP") {
-              // Navigate to OTP screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const OtpScreen()),
-              );
-            } else if (text == "Add a Guest") {
+            // if (text == "Generate OTP") {
+            //   // Navigate to OTP screen
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => OtpScreen(email: _userProfile?.email ?? "")),
+            //   );
+            // } else
+            if (text == "Add a Guest") {
               // Navigate to Register Guest screen
               Navigator.push(
                 context,

@@ -235,7 +235,8 @@ class _CustomAppBarState extends State<CustomAppBar>
                     backgroundColor: Color(0xFFD6A19F),
                     radius: 18,
                     child: Text(
-                      widget.userProfile != null
+                      (widget.userProfile != null &&
+                              widget.userProfile!.firstname.isNotEmpty)
                           ? widget.userProfile!.firstname[0].toUpperCase()
                           : 'U',
                       style: TextStyle(

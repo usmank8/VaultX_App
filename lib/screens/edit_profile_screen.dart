@@ -33,6 +33,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final List<String> _residenceOptions = ['House', 'Apartment', 'Flat'];
   final List<String> _residenceTypeOptions = ['Owned', 'Rented'];
 
+  // Helper to get the matching dropdown value from options (case-insensitive)
+  String _getDropdownValue(String? value, List<String> options) {
+    if (value == null) return options.first;
+    final match = options.firstWhere(
+      (opt) => opt.toLowerCase() == value.toLowerCase(),
+      orElse: () => options.first,
+    );
+    return match;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,8 +77,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _cnicCtrl.text = profile.cnic;
           _addressCtrl.text = profile.address;
           _blockCtrl.text = profile.block;
-          _residenceChoice = profile.residence.toLowerCase();
-          _residenceTypeChoice = profile.residenceType.toLowerCase();
+          _residenceChoice =
+              _getDropdownValue(profile.residence, _residenceOptions);
+          _residenceTypeChoice =
+              _getDropdownValue(profile.residenceType, _residenceTypeOptions);
         });
       } else {
         setState(() {
@@ -77,7 +89,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } catch (e) {
       setState(() {
-        _error = 'Error loading profile: ${e.toString()}';
+        _error = 'Error loading profile: \\${e.toString()}';
       });
     } finally {
       setState(() {
@@ -125,7 +137,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       // Navigate back
-      Navigator.pop(context, true); // Return true to indicate profile was updated
+      Navigator.pop(
+          context, true); // Return true to indicate profile was updated
     } catch (e) {
       setState(() {
         _error = 'Error updating profile: ${e.toString()}';
@@ -184,7 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                         ),
                         SizedBox(height: 24),
-                        
+
                         // Profile picture
                         Center(
                           child: Stack(
@@ -223,33 +236,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                         ),
                         SizedBox(height: 24),
-                        
+
                         // First & Last Name
                         Row(
                           children: [
                             Expanded(
-                              child: _buildInput(_firstNameCtrl, label: "First Name"),
+                              child: _buildInput(_firstNameCtrl,
+                                  label: "First Name"),
                             ),
                             SizedBox(width: 16),
                             Expanded(
-                              child: _buildInput(_lastNameCtrl, label: "Last Name"),
+                              child: _buildInput(_lastNameCtrl,
+                                  label: "Last Name"),
                             ),
                           ],
                         ),
 
-                        _buildInput(_phoneCtrl, label: "Phone Number", 
-                          helperText: "Format: +92XXXXXXXXXX or 03XXXXXXXXX"),
-                        _buildInput(_cnicCtrl, label: "CNIC Number", 
-                          helperText: "13 digits without dashes"),
+                        _buildInput(_phoneCtrl,
+                            label: "Phone Number",
+                            helperText: "Format: +92XXXXXXXXXX or 03XXXXXXXXX"),
+                        _buildInput(_cnicCtrl,
+                            label: "CNIC Number",
+                            helperText: "13 digits without dashes"),
                         _buildInput(_blockCtrl, label: "Block"),
-                        _buildInput(_addressCtrl, label: "Street Number / Address"),
+                        _buildInput(_addressCtrl,
+                            label: "Street Number / Address"),
 
                         _buildDropdown(
                           label: "Residence",
                           value: _residenceChoice,
                           options: _residenceOptions,
                           onChanged: (v) {
-                            setState(() => _residenceChoice = v);
+                            setState(() => _residenceChoice =
+                                _getDropdownValue(v, _residenceOptions));
                           },
                         ),
 
@@ -258,7 +277,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           value: _residenceTypeChoice,
                           options: _residenceTypeOptions,
                           onChanged: (v) {
-                            setState(() => _residenceTypeChoice = v);
+                            setState(() => _residenceTypeChoice =
+                                _getDropdownValue(v, _residenceTypeOptions));
                           },
                         ),
 
@@ -267,7 +287,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         if (_error != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
-                            child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                            child: Text(_error!,
+                                style: const TextStyle(color: Colors.red)),
                           ),
 
                         SizedBox(
@@ -328,21 +349,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               if (value == null || value.isEmpty) {
                 return 'This field is required';
               }
-              
+
               if (label == "CNIC Number") {
                 final RegExp cnicRegex = RegExp(r'^\d{13}$');
                 if (!cnicRegex.hasMatch(value.trim())) {
                   return 'CNIC must be 13 digits';
                 }
               }
-              
+
               if (label == "Phone Number") {
-                final RegExp phoneRegex = RegExp(r'^\+?92[0-9]{10}$|^0[0-9]{10}$');
+                final RegExp phoneRegex =
+                    RegExp(r'^\+?92[0-9]{10}$|^0[0-9]{10}$');
                 if (!phoneRegex.hasMatch(value.trim())) {
                   return 'Please enter a valid Pakistani phone number';
                 }
               }
-              
+
               return null;
             },
           ),
@@ -367,11 +389,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: DropdownButtonFormField<String>(
-              value: value,
+              value: value != null && options.contains(value)
+                  ? value
+                  : options.first,
               decoration: const InputDecoration(border: InputBorder.none),
               hint: Text(label),
               items: options
-                  .map((opt) => DropdownMenuItem(value: opt.toLowerCase(), child: Text(opt)))
+                  .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
                   .toList(),
               onChanged: onChanged,
               validator: (value) {

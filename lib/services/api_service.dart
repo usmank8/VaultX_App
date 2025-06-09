@@ -21,9 +21,9 @@ class ApiService {
   // 2) Base URL switches for Android vs iOS/web
   String get _baseUrl {
     if (Platform.isAndroid) {
-      return 'https://vaultx-be-main.onrender.com';
+      return 'https://vaultx-be-sq00.onrender.com';
     } else {
-      return 'https://vaultx-be-main.onrender.com';
+      return 'https://vaultx-be-sq00.onrender.com';
     }
   }
 
@@ -44,19 +44,19 @@ class ApiService {
   /// ─── SIGN UP (public) ───────────────────────────────────────────
   Future<void> signUp(SignUpModel dto) async {
     final uri = Uri.parse('$_baseUrl/auth/signup');
-    
+
     try {
       debugPrint('Sending signup request to: $uri');
       debugPrint('Request body: ${jsonEncode(dto.toJson())}');
-      
+
       final res = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(dto.toJson()),
       );
-      
+
       debugPrint('Signup response status: ${res.statusCode}');
-      
+
       if (res.statusCode == 200 || res.statusCode == 201) {
         debugPrint('Signup successful');
         return;
@@ -65,11 +65,12 @@ class ApiService {
         String errorMessage;
         try {
           final errorBody = jsonDecode(res.body);
-          errorMessage = errorBody['message'] ?? 'Signup failed (${res.statusCode})';
+          errorMessage =
+              errorBody['message'] ?? 'Signup failed (${res.statusCode})';
         } catch (_) {
           errorMessage = 'Signup failed (${res.statusCode}): ${res.body}';
         }
-        
+
         debugPrint('Signup error: $errorMessage');
         throw Exception(errorMessage);
       }
@@ -94,17 +95,16 @@ class ApiService {
     if (res.statusCode == 200 || res.statusCode == 201) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
       final token = body['token'] as String;
-      
-      try {
-        // Try to store in SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwt_token', token);
-      } catch (e) {
-        // If SharedPreferences fails, just log the error
-        debugPrint('Failed to store token in SharedPreferences: $e');
-        // We'll still return the token so the app can continue
+      // Save token
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', token);
+
+      // Save isApprovedBySocietyAdmin flag
+      if (body.containsKey('isApprovedBySocietyAdmin')) {
+        await prefs.setBool('isApprovedBySocietyAdmin',
+            body['isApprovedBySocietyAdmin'] == true);
       }
-      
+
       return token;
     } else {
       throw Exception('Login failed (${res.statusCode}): ${res.body}');
@@ -120,7 +120,7 @@ class ApiService {
     } catch (e) {
       debugPrint('Failed to remove token from SharedPreferences: $e');
     }
-    
+
     // Always clear the in-memory token
     _inMemoryToken = null;
     _client.clearToken(); // Use a new method to clear the token
@@ -143,93 +143,94 @@ class ApiService {
   }
 
   /// ─── PROFILE: POST /profile/create ──────────────────────────────
-Future<void> createProfile(CreateProfileModel dto) async {
-  final uri = Uri.parse('$_baseUrl/profile/create');
-  
-  // Debug the token before making the request
-  debugPrint('About to create profile, checking token:');
-  _client.debugToken();
-  
-  // Debug the request body
-  final requestBody = jsonEncode(dto.toJson());
-  debugPrint('Profile create request body: $requestBody');
-  
-  try {
-    // Ensure content type is set explicitly
-    final res = await _client.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: requestBody,
-    );
-    
-    debugPrint('Profile create response status: ${res.statusCode}');
-    debugPrint('Profile create response body: ${res.body}');
-    
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      String errorMessage;
-      try {
-        final errorBody = jsonDecode(res.body);
-        errorMessage = errorBody['message'] ?? 'Create profile failed (${res.statusCode})';
-      } catch (_) {
-        errorMessage = 'Create profile failed (${res.statusCode}): ${res.body}';
+  Future<void> createProfile(CreateProfileModel dto) async {
+    final uri = Uri.parse('$_baseUrl/profile/create');
+
+    // Debug the token before making the request
+    debugPrint('About to create profile, checking token:');
+    _client.debugToken();
+
+    // Debug the request body
+    final requestBody = jsonEncode(dto.toJson());
+    debugPrint('Profile create request body: $requestBody');
+
+    try {
+      // Ensure content type is set explicitly
+      final res = await _client.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: requestBody,
+      );
+
+      debugPrint('Profile create response status: ${res.statusCode}');
+      debugPrint('Profile create response body: ${res.body}');
+
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        String errorMessage;
+        try {
+          final errorBody = jsonDecode(res.body);
+          errorMessage = errorBody['message'] ??
+              'Create profile failed (${res.statusCode})';
+        } catch (_) {
+          errorMessage =
+              'Create profile failed (${res.statusCode}): ${res.body}';
+        }
+
+        throw Exception(errorMessage);
       }
-      
-      throw Exception(errorMessage);
-    }
-  } catch (e) {
-    debugPrint('Profile create error: $e');
-    if (e is Exception) {
-      rethrow;
-    }
-    throw Exception('Network error: ${e.toString()}');
-  }
-}
- //// ─── PROFILE: PUT /profile/update ──────────────────────────────
- Future<void> updateProfile(UpdateProfileModel dto) async {
-  final uri = Uri.parse('$_baseUrl/profile/update');
-  
-  // Debug the token before making the request
-  debugPrint('About to update profile, checking token:');
-  _client.debugToken();
-  
-  // Debug the request body
-  final requestBody = jsonEncode(dto.toJson());
-  debugPrint('Profile update request body: $requestBody');
-  
-  try {
-    // Ensure content type is set explicitly
-    final res = await _client.patch(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: requestBody,
-    );
-    
-    debugPrint('Profile update response status: ${res.statusCode}');
-    debugPrint('Profile update response body: ${res.body}');
-    
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      String errorMessage;
-      try {
-        final errorBody = jsonDecode(res.body);
-        errorMessage = errorBody['message'] ?? 'Update profile failed (${res.statusCode})';
-      } catch (_) {
-        errorMessage = 'Update profile failed (${res.statusCode}): ${res.body}';
+    } catch (e) {
+      debugPrint('Profile create error: $e');
+      if (e is Exception) {
+        rethrow;
       }
-      
-      throw Exception(errorMessage);
+      throw Exception('Network error: ${e.toString()}');
     }
-  } catch (e) {
-    debugPrint('Profile update error: $e');
-    if (e is Exception) {
-      rethrow;
-    }
-    throw Exception('Network error: ${e.toString()}');
   }
-}
 
+  //// ─── PROFILE: PUT /profile/update ──────────────────────────────
+  Future<void> updateProfile(UpdateProfileModel dto) async {
+    final uri = Uri.parse('$_baseUrl/profile/update');
 
+    // Debug the token before making the request
+    debugPrint('About to update profile, checking token:');
+    _client.debugToken();
 
+    // Debug the request body
+    final requestBody = jsonEncode(dto.toJson());
+    debugPrint('Profile update request body: $requestBody');
 
+    try {
+      // Ensure content type is set explicitly
+      final res = await _client.patch(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: requestBody,
+      );
+
+      debugPrint('Profile update response status: ${res.statusCode}');
+      debugPrint('Profile update response body: ${res.body}');
+
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        String errorMessage;
+        try {
+          final errorBody = jsonDecode(res.body);
+          errorMessage = errorBody['message'] ??
+              'Update profile failed (${res.statusCode})';
+        } catch (_) {
+          errorMessage =
+              'Update profile failed (${res.statusCode}): ${res.body}';
+        }
+
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      debugPrint('Profile update error: $e');
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Network error: ${e.toString()}');
+    }
+  }
 
   /// ─── PROFILE: POST /profile/password/update ─────────────────────
   Future<void> updatePassword(UpdatePasswordModel dto) async {
@@ -239,21 +240,22 @@ Future<void> createProfile(CreateProfileModel dto) async {
       body: jsonEncode(dto.toJson()),
     );
     if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception('Password update failed (${res.statusCode}): ${res.body}');
+      throw Exception(
+          'Password update failed (${res.statusCode}): ${res.body}');
     }
   }
 
   /// ─── VEHICLE: POST /vehicle/add ─────────────────────────────────
   Future<void> addVehicle(VehicleModel dto) async {
     final uri = Uri.parse('$_baseUrl/vehicle/add');
-    
+
     debugPrint('Adding vehicle: ${jsonEncode(dto.toJson())}');
-    
+
     final res = await _client.post(
       uri,
       body: jsonEncode(dto.toJson()),
     );
-    
+
     debugPrint('Add vehicle response: ${res.statusCode}');
     if (res.statusCode != 200 && res.statusCode != 201) {
       debugPrint('Add vehicle error body: ${res.body}');
@@ -277,14 +279,14 @@ Future<void> createProfile(CreateProfileModel dto) async {
   /// ─── GUEST: POST /guest/register ─────────────────────────────────
   Future<String> registerGuest(AddGuestModel dto) async {
     final uri = Uri.parse('$_baseUrl/guest/register');
-    
+
     debugPrint('Registering guest: ${jsonEncode(dto.toJson())}');
-    
+
     final res = await _client.post(
       uri,
       body: jsonEncode(dto.toJson()),
     );
-    
+
     debugPrint('Register guest response: ${res.statusCode}');
     if (res.statusCode == 200 || res.statusCode == 201) {
       final Map<String, dynamic> responseData = jsonDecode(res.body);
@@ -297,7 +299,7 @@ Future<void> createProfile(CreateProfileModel dto) async {
 
   /// ─── GUEST: GET /guest ─────────────────────────────────────────
   Future<List<GuestModel>> getGuests() async {
-    final uri = Uri.parse('$_baseUrl/guest');
+    final uri = Uri.parse('$_baseUrl/guest/guest/mine');
     final res = await _client.get(uri);
 
     if (res.statusCode == 200) {
@@ -311,16 +313,99 @@ Future<void> createProfile(CreateProfileModel dto) async {
   /// ─── GUEST: POST /guest/verify ─────────────────────────────────
   Future<Map<String, dynamic>> verifyGuest(String guestId) async {
     final uri = Uri.parse('$_baseUrl/guest/verify');
-    
+
     final res = await _client.post(
       uri,
       body: jsonEncode({'guestId': guestId}),
     );
-    
+
     if (res.statusCode == 200 || res.statusCode == 201) {
       return jsonDecode(res.body);
     } else {
       throw Exception('Verify guest failed (${res.statusCode}): ${res.body}');
+    }
+  }
+
+  /// ─── AUTH: POST /auth/otp/send ────────────────────────────────
+  Future<void> sendOtp(String email) async {
+    final uri = Uri.parse('$_baseUrl/auth/otp/send');
+    final body = jsonEncode({'email': email});
+    debugPrint('Sending OTP request to: $uri');
+    debugPrint('Request body: $body');
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    debugPrint('Send OTP response status: ${res.statusCode}');
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      debugPrint('OTP sent successfully');
+      return;
+    } else {
+      String errorMessage;
+      try {
+        final errorBody = jsonDecode(res.body);
+        errorMessage =
+            errorBody['message'] ?? 'Send OTP failed (${res.statusCode})';
+      } catch (_) {
+        errorMessage = 'Send OTP failed (${res.statusCode}): ${res.body}';
+      }
+      throw Exception(errorMessage);
+    }
+  }
+
+  /// ─── AUTH: POST /auth/otp/verify ───────────────────────────────
+  Future<void> verifyOtp(String email, String otp) async {
+    final uri = Uri.parse('$_baseUrl/auth/otp/verify');
+    final body = jsonEncode({'email': email, 'otp': otp});
+    debugPrint('Verifying OTP at: $uri');
+    debugPrint('Request body: $body');
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    debugPrint('Verify OTP response status: ${res.statusCode}');
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      debugPrint('OTP verified successfully');
+      return;
+    } else {
+      String errorMessage;
+      try {
+        final errorBody = jsonDecode(res.body);
+        errorMessage =
+            errorBody['message'] ?? 'Verify OTP failed (${res.statusCode})';
+      } catch (_) {
+        errorMessage = 'Verify OTP failed (${res.statusCode}): ${res.body}';
+      }
+      throw Exception(errorMessage);
+    }
+  }
+
+  /// ─── AUTH: POST /auth/resend-otp ───────────────────────────────
+  Future<void> resendOtp(String email) async {
+    final uri = Uri.parse('$_baseUrl/auth/resend-otp');
+    final body = jsonEncode({'email': email});
+    debugPrint('Resending OTP request to: $uri');
+    debugPrint('Request body: $body');
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    debugPrint('Resend OTP response status: ${res.statusCode}');
+    if (res.statusCode == 200) {
+      return;
+    } else {
+      String errorMessage;
+      try {
+        final errorBody = jsonDecode(res.body);
+        errorMessage =
+            errorBody['message'] ?? 'Resend OTP failed (${res.statusCode})';
+      } catch (_) {
+        errorMessage = 'Resend OTP failed (${res.statusCode}): ${res.body}';
+      }
+      throw Exception(errorMessage);
     }
   }
 }

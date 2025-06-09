@@ -3,6 +3,7 @@ import 'package:vaultx_solution/auth/screens/loginscreen.dart';
 import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/sign_up_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
+import 'package:vaultx_solution/screens/otp_screen.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -32,7 +33,8 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_emailCtrl.text.trim())) {
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+        .hasMatch(_emailCtrl.text.trim())) {
       setState(() => _error = "Please enter a valid email address");
       return;
     }
@@ -46,13 +48,13 @@ class _SignUpPageState extends State<SignUpPage> {
       _loading = true;
       _error = null;
     });
-    
+
     try {
-      await _api.signUp(SignUpModel(
+      final signupSuccess = await _api.signUp(SignUpModel(
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text,
       ));
-      
+
       // On success, show snackbar and navigate to Login
       if (mounted) {
         // Show success message
@@ -69,23 +71,26 @@ class _SignUpPageState extends State<SignUpPage> {
             duration: const Duration(seconds: 3),
           ),
         );
-        
-        // Navigate to login page
+
+        // Navigate to OTP screen for verification
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
+          MaterialPageRoute(
+            builder: (_) => OtpScreen(email: _emailCtrl.text),
+          ),
         );
+        return;
       }
     } catch (e) {
       String errorMsg = e.toString().replaceFirst('Exception: ', '');
-      
+
       // Make error message more user-friendly
       if (errorMsg.contains('already exists')) {
         errorMsg = 'An account with this email already exists';
       } else if (errorMsg.contains('network')) {
         errorMsg = 'Network error. Please check your connection';
       }
-      
+
       setState(() => _error = errorMsg);
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -107,34 +112,36 @@ class _SignUpPageState extends State<SignUpPage> {
               width: double.infinity,
               child: Image.asset('assets/auth.jpg', fit: BoxFit.cover),
             ),
-            
+
             // Sign Up Form Card
             Positioned(
               top: h * 0.30,
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black12, 
-                      blurRadius: 10, 
-                      offset: Offset(0, -2)
-                    ),
+                        color: Colors.black12,
+                        blurRadius: 10,
+                        offset: Offset(0, -2)),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("Sign Up",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 30),
-                    
+
                     // Email
-                    const Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text("Email",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _emailCtrl,
@@ -143,18 +150,20 @@ class _SignUpPageState extends State<SignUpPage> {
                         filled: true,
                         fillColor: const Color(0xFFFFF1ED),
                         hintText: "Enter email",
-                        prefixIcon: const Icon(Icons.mail_outline, color: Colors.red),
+                        prefixIcon:
+                            const Icon(Icons.mail_outline, color: Colors.red),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8), 
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Password
-                    const Text("Password", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text("Password",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _passCtrl,
@@ -163,14 +172,14 @@ class _SignUpPageState extends State<SignUpPage> {
                         filled: true,
                         fillColor: const Color(0xFFFFF1ED),
                         hintText: "Enter password (min 6 characters)",
-                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.red),
+                        prefixIcon:
+                            const Icon(Icons.lock_outline, color: Colors.red),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword 
-                              ? Icons.visibility_off_outlined 
-                              : Icons.visibility_outlined,
-                            color: Colors.red
-                          ),
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: Colors.red),
                           onPressed: () {
                             setState(() {
                               _obscurePassword = !_obscurePassword;
@@ -178,14 +187,14 @@ class _SignUpPageState extends State<SignUpPage> {
                           },
                         ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8), 
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Error Message
                     if (_error != null)
                       Padding(
@@ -195,29 +204,28 @@ class _SignUpPageState extends State<SignUpPage> {
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),
-                    
+
                     // Sign Up Button
                     ElevatedButton(
                       onPressed: _loading ? null : _onSignUp,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD6A19F),
+                        backgroundColor: Colors.redAccent,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)
-                        ),
+                            borderRadius: BorderRadius.circular(14)),
                       ),
                       child: _loading
                           ? const SizedBox(
                               height: 24,
                               width: 24,
-                              child:UnderReviewScreen(),
+                              child: UnderReviewScreen(),
                             )
-                          : const Text("Sign Up", 
+                          : const Text("Sign Up",
                               style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Navigate to Login
                     Center(
                       child: GestureDetector(
@@ -228,39 +236,39 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: const Text(
                           "Already have an account? LOGIN",
                           style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline),
                         ),
                       ),
                     ),
-                    
-                    const SizedBox(height: 32),
-                    const Center(child: Text("OR CONTINUE WITH")),
-                    const SizedBox(height: 16),
-                    
-                    // Social buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: Image.network(
-                            'https://img.icons8.com/color/48/google-logo.png',
-                            width: 30,
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Image.network(
-                            'https://img.icons8.com/color/48/facebook-new.png',
-                            width: 30,
-                          ),
-                        ),
-                      ],
-                    ),
+
+                    const SizedBox(height: 65),
+                    // Uncomment if you want to add social login options
+                    // const Center(child: Text("OR CONTINUE WITH")),
+                    // const SizedBox(height: 16),
+
+                    // // Social buttons
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     IconButton(
+                    //       onPressed: () {},
+                    //       icon: Image.network(
+                    //         'https://img.icons8.com/color/48/google-logo.png',
+                    //         width: 30,
+                    //       ),
+                    //     ),
+                    //     const SizedBox(width: 20),
+                    //     IconButton(
+                    //       onPressed: () {},
+                    //       icon: Image.network(
+                    //         'https://img.icons8.com/color/48/facebook-new.png',
+                    //         width: 30,
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),

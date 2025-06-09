@@ -8,6 +8,7 @@ class CreateProfileModel {
   final String block;
   final String residence;
   final String residenceType;
+  final String email;
 
   CreateProfileModel({
     required this.firstname,
@@ -18,6 +19,7 @@ class CreateProfileModel {
     required this.block,
     required this.residence,
     required this.residenceType,
+    required this.email,
   });
 
   // Add validation methods to match backend requirements
@@ -57,7 +59,6 @@ class CreateProfileModel {
   factory CreateProfileModel.fromJson(Map<String, dynamic> json) {
     // Handle the nested structure from backend
     final residence = json['residence'] ?? {};
-    
     return CreateProfileModel(
       firstname: json['firstname'] ?? '',
       lastname: json['lastname'] ?? '',
@@ -67,17 +68,21 @@ class CreateProfileModel {
       block: residence['block'] ?? '',
       residence: residence['residence'] ?? '',
       residenceType: residence['residenceType'] ?? '',
+      email: json['email'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'firstname': firstname,
-    'lastname': lastname,
-    'phonenumber': phonenumber,
-    'cnic': cnic,
-    'address': address,
-    'block': block,
-    'residence': residence.toLowerCase(),
-    'residenceType': residenceType.toLowerCase(),
-  };
+        'firstname': firstname,
+        'lastname': lastname,
+        'phone': phonenumber,
+        'cnic': cnic,
+        'email': email,
+        'residence': {
+          'addressLine1': address,
+          'block': block,
+          'residence': residence,
+          'residenceType': residenceType,
+        },
+      };
 }
