@@ -212,13 +212,18 @@ class _SignUpPageState extends State<SignUpPage> {
                         backgroundColor: Colors.redAccent,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                       child: _loading
                           ? const SizedBox(
                               height: 24,
                               width: 24,
-                              child: UnderReviewScreen(),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
                             )
                           : const Text("Sign Up",
                               style: TextStyle(fontWeight: FontWeight.bold)),
