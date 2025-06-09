@@ -12,11 +12,26 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final ApiService _api = ApiService();
-  final TextEditingController _otpController = TextEditingController();
+  final List<TextEditingController> _otpControllers =
+      List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   bool _isSending = false;
   bool _isOTPSent = false;
   bool _isVerifying = false;
   bool _isResending = false;
+
+  @override
+  void dispose() {
+    for (final c in _otpControllers) {
+      c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
+    }
+    super.dispose();
+  }
+
+  String get _otpCode => _otpControllers.map((c) => c.text).join();
 
   Future<void> _sendOtp() async {
     setState(() => _isSending = true);
@@ -38,7 +53,7 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _verifyOtp() async {
-    final code = _otpController.text.trim();
+    final code = _otpCode;
     if (code.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -139,16 +154,36 @@ class _OtpScreenState extends State<OtpScreen> {
                     ),
                   )
                 else ...[
-                  TextField(
-                    controller: _otpController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter 6-digit OTP',
-                      border: OutlineInputBorder(),
-                    ),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(6, (i) {
+                      return SizedBox(
+                        width: 45,
+                        child: TextField(
+                          controller: _otpControllers[i],
+                          focusNode: _focusNodes[i],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          maxLength: 1,
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
+                          decoration: const InputDecoration(
+                            counterText: "",
+                            border: OutlineInputBorder(),
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          onChanged: (val) {
+                            if (val.isNotEmpty && i < 5) {
+                              _focusNodes[i + 1].requestFocus();
+                            } else if (val.isEmpty && i > 0) {
+                              _focusNodes[i - 1].requestFocus();
+                            }
+                          },
+                        ),
+                      );
+                    }),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
