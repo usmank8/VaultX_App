@@ -388,7 +388,9 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                         ? SizedBox(
                             width: 20,
                             height: 20,
-                            child:UnderReviewScreen()
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,),
                           )
                         : const Text(
                             'Submit',

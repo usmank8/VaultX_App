@@ -4,8 +4,8 @@ import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/create_profile_model.dart';
 import 'package:vaultx_solution/models/update_profile_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
-import 'package:vaultx_solution/screens/home_page.dart'; // DashboardPage
-import 'package:vaultx_solution/screens/otp_screen.dart'; // Import OtpScreen
+import 'package:vaultx_solution/screens/home_page.dart'; 
+import 'package:vaultx_solution/screens/pending_approval_screen.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
@@ -285,9 +285,11 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
             duration: const Duration(seconds: 2),
           ),
         );
-        Navigator.pushReplacement(
+        // Redirect to PendingApprovalScreen with no back arrow
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardPage()),
+          MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
+          (route) => false,
         );
       } else {
         setState(() {
