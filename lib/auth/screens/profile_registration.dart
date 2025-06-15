@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
 import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/create_profile_model.dart';
+import 'package:vaultx_solution/models/update_profile_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
 import 'package:vaultx_solution/screens/home_page.dart'; // DashboardPage
 import 'package:vaultx_solution/screens/otp_screen.dart'; // Import OtpScreen
@@ -30,6 +31,8 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
   bool _loading = false;
   String? _error;
   double _completionPercentage = 0.0;
+
+  CreateProfileModel? _existingProfile;
 
   final List<String> _residenceOptions = ['House', 'Apartment', 'Flat'];
   final List<String> _residenceTypeOptions = ['Owned', 'Rented'];
@@ -61,23 +64,63 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     try {
       final profile = await _api.getProfile();
       if (profile != null && mounted) {
-        // Profile exists, navigate to dashboard
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Profile already exists. Redirecting to dashboard.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // If only email is present and all other fields are empty, treat as no profile
+        final onlyEmailPresent = profile.email.isNotEmpty &&
+            profile.firstname.isEmpty &&
+            profile.lastname.isEmpty &&
+            profile.phonenumber.isEmpty &&
+            profile.cnic.isEmpty &&
+            profile.address.isEmpty &&
+            profile.block.isEmpty &&
+            profile.residence.isEmpty &&
+            profile.residenceType.isEmpty;
+        if (onlyEmailPresent) {
+          // Do not prefill or set _existingProfile, treat as new profile
+          return;
+        }
+        _existingProfile = profile;
+        // Prefill fields with existing data
+        _firstNameCtrl.text = profile.firstname;
+        _lastNameCtrl.text = profile.lastname;
+        _phoneCtrl.text = profile.phonenumber;
+        _cnicCtrl.text = profile.cnic;
+        _blockCtrl.text = profile.block;
+        _addressCtrl.text = profile.address;
+        _residenceChoice = profile.residence;
+        _residenceTypeChoice = profile.residenceType;
 
-        // Short delay to show the message
-        Future.delayed(Duration(seconds: 1), () {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const DashboardPage()),
-            );
-          }
-        });
+        // Check if all required fields are filled
+        final allFieldsFilled = profile.firstname.isNotEmpty &&
+            profile.lastname.isNotEmpty &&
+            profile.phonenumber.isNotEmpty &&
+            profile.cnic.isNotEmpty &&
+            profile.address.isNotEmpty &&
+            profile.block.isNotEmpty &&
+            profile.residence.isNotEmpty &&
+            profile.residenceType.isNotEmpty &&
+            profile.email.isNotEmpty;
+
+        if (allFieldsFilled) {
+          // Profile exists and is complete, navigate to dashboard
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text('Profile already exists. Redirecting to dashboard.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Short delay to show the message
+          Future.delayed(Duration(seconds: 1), () {
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const DashboardPage()),
+              );
+            }
+          });
+        }
+        // else: stay on profile registration with prefilled fields
       }
     } catch (e) {
       debugPrint('Error checking existing profile: $e');
@@ -187,42 +230,70 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
       firstname: _firstNameCtrl.text.trim(),
       lastname: _lastNameCtrl.text.trim(),
       phonenumber: _phoneCtrl.text.trim(),
-      email: '',
+      email: _existingProfile?.email ?? '',
       cnic: _cnicCtrl.text.trim(),
       address: _addressCtrl.text.trim(),
       block: _blockCtrl.text.trim(),
-      residence: _residenceChoice!.toLowerCase(),
-      residenceType: _residenceTypeChoice!.toLowerCase(),
+      residence: _residenceChoice ?? '',
+      residenceType: _residenceTypeChoice ?? '',
     );
 
     try {
-      debugPrint('Submitting profile with data: ${jsonEncode(dto.toJson())}');
-      await _api.createProfile(dto);
+      if (_existingProfile != null) {
+        // Convert CreateProfileModel to UpdateProfileModel
+        final updateDto = UpdateProfileModel(
+          firstname: dto.firstname,
+          lastname: dto.lastname,
+          phonenumber: dto.phonenumber,
+          cnic: dto.cnic,
+          address: dto.address,
+          block: dto.block,
+          residence: dto.residence,
+          residenceType: dto.residenceType,
+        );
+        await _api.updateProfile(updateDto);
+      } else {
+        // Call createProfile if no profile exists
+        await _api.createProfile(dto);
+      }
 
       if (!mounted) return;
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: const [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 10),
-              Text('Profile created successfully!'),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      // Check if all required fields are filled before navigating
+      final allFieldsFilled = dto.firstname.isNotEmpty &&
+          dto.lastname.isNotEmpty &&
+          dto.phonenumber.isNotEmpty &&
+          dto.cnic.isNotEmpty &&
+          dto.address.isNotEmpty &&
+          dto.block.isNotEmpty &&
+          dto.residence.isNotEmpty &&
+          dto.residenceType.isNotEmpty &&
+          dto.email.isNotEmpty;
 
-      // Navigate to OTP verification screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => OtpScreen(email: dto.email),
-        ),
-      );
+      if (allFieldsFilled) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 10),
+                Text('Profile saved successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardPage()),
+        );
+      } else {
+        setState(() {
+          _error = 'Please fill all required fields.';
+        });
+      }
     } catch (e) {
       setState(() {
         _error = e.toString().replaceFirst('Exception: ', '');
@@ -230,6 +301,16 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  // Helper to get a valid dropdown value from options (case-insensitive)
+  String? _getDropdownValue(String? value, List<String> options) {
+    if (value == null || value.isEmpty) return null;
+    final match = options.firstWhere(
+      (opt) => opt.toLowerCase() == value.toLowerCase(),
+      orElse: () => '',
+    );
+    return match.isNotEmpty ? match : null;
   }
 
   @override
@@ -298,7 +379,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
 
             _buildDropdown(
               label: "Residence",
-              value: _residenceChoice,
+              value: _getDropdownValue(_residenceChoice, _residenceOptions),
               options: _residenceOptions,
               onChanged: (v) {
                 setState(() => _residenceChoice = v);
@@ -308,7 +389,8 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
 
             _buildDropdown(
               label: "Residence Type",
-              value: _residenceTypeChoice,
+              value: _getDropdownValue(
+                  _residenceTypeChoice, _residenceTypeOptions),
               options: _residenceTypeOptions,
               onChanged: (v) {
                 setState(() => _residenceTypeChoice = v);
@@ -364,28 +446,29 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     String? helperText,
   }) =>
       Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: ctrl,
-            decoration: InputDecoration(
-              hintText: label,
-              helperText: helperText,
-              helperStyle: TextStyle(color: Colors.grey.shade700, fontSize: 12),
-              filled: true,
-              fillColor: const Color(0xFFFFF1ED),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: BorderSide.none,
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: ctrl,
+              decoration: InputDecoration(
+                hintText: label,
+                helperText: helperText,
+                helperStyle:
+                    TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                filled: true,
+                fillColor: const Color(0xFFFFF1ED),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-          ),
-        ]),
-      );
+          ]));
 
   Widget _buildDropdown({
     required String label,
@@ -394,27 +477,33 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
     required ValueChanged<String?> onChanged,
   }) =>
       Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF1ED),
-              borderRadius: BorderRadius.circular(24),
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF1ED),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: DropdownButtonFormField<String>(
+                value: value != null && options.contains(value) ? value : null,
+                decoration: const InputDecoration(border: InputBorder.none),
+                hint: Text(label),
+                items: options
+                    .map(
+                        (opt) => DropdownMenuItem(value: opt, child: Text(opt)))
+                    .toList(),
+                onChanged: onChanged,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a $label';
+                  }
+                  return null;
+                },
+              ),
             ),
-            child: DropdownButtonFormField<String>(
-              value: value,
-              decoration: const InputDecoration(border: InputBorder.none),
-              hint: Text(label),
-              items: options
-                  .map((opt) => DropdownMenuItem(
-                      value: opt.toLowerCase(), child: Text(opt)))
-                  .toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ]),
-      );
+          ]));
 }

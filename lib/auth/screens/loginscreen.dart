@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       // Store token in memory
       if (token != null) {
         _api.setInMemoryToken(token);
-        _api.debugToken(); // Debug token to verify it's set correctly
+        _api.debugToken();
       }
 
       if (!mounted) return;
@@ -69,30 +69,42 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
-      final prefs = await SharedPreferences.getInstance();
-      final isApproved = prefs.getBool('isApprovedBySocietyAdmin') ?? false;
-
-      if (!isApproved) {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
-        );
-        return; // Prevent further navigation
-      }
-
       // Check if profile exists
       try {
         final profile = await _api.getProfile();
+        final prefs = await SharedPreferences.getInstance();
+        final isApproved = prefs.getBool('isApprovedBySocietyAdmin') ?? false;
 
+        bool needsResidenceDetails = false;
         if (profile != null) {
-          // Profile exists, go to dashboard
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const DashboardPage()),
-          );
+          // Check if any residence-related fields are empty
+          if (profile.address.isEmpty ||
+              profile.block.isEmpty ||
+              profile.residence.isEmpty ||
+              profile.residenceType.isEmpty) {
+            needsResidenceDetails = true;
+          }
+        }
+
+        if (profile != null && !needsResidenceDetails) {
+          // Profile exists and residence details are filled
+          if (!isApproved) {
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
+            );
+          } else {
+            // Profile exists and is approved
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DashboardPage()),
+            );
+          }
         } else {
-          // No profile, go to profile registration
+          // No profile or missing residence details, go to profile registration
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const ProfileRegistrationPage()),
@@ -101,6 +113,7 @@ class _LoginPageState extends State<LoginPage> {
       } catch (e) {
         debugPrint('Error checking profile: $e');
         // Error checking profile, default to profile registration
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const ProfileRegistrationPage()),
@@ -119,7 +132,6 @@ class _LoginPageState extends State<LoginPage> {
           errorMsg = 'Login failed. Please try again later';
         }
       }
-
       setState(() => _error = errorMsg);
     } finally {
       if (mounted) setState(() => _loading = false);
