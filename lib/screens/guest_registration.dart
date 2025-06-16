@@ -79,7 +79,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
   }
 
   void _addVehicle() async {
-    final result = await Navigator.push(
+    final result = await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => GuestVehicleRegistrationPage(
@@ -116,7 +116,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
       
       if (mounted) {
         // Navigate to confirmation page with QR code
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => GuestConfirmationPage(qrCodeImage: qrCodeImage),
