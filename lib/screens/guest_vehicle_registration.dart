@@ -5,17 +5,19 @@ import 'package:vaultx_solution/widgets/custom_app_bar.dart';
 
 class GuestVehicleRegistrationPage extends StatefulWidget {
   final Function(GuestVehicleModel) onVehicleAdded;
-  
+
   const GuestVehicleRegistrationPage({
     Key? key,
     required this.onVehicleAdded,
   }) : super(key: key);
 
   @override
-  _GuestVehicleRegistrationPageState createState() => _GuestVehicleRegistrationPageState();
+  _GuestVehicleRegistrationPageState createState() =>
+      _GuestVehicleRegistrationPageState();
 }
 
-class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationPage> {
+class _GuestVehicleRegistrationPageState
+    extends State<GuestVehicleRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final _vehicleNameController = TextEditingController();
   final _vehicleModelController = TextEditingController();
@@ -23,11 +25,18 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
   final _rfidTagController = TextEditingController();
   final _vehicleColorController = TextEditingController();
   String _vehicleType = 'Sedan'; // Default value
-  
+
   bool _isLoading = false;
   String? _errorMessage;
-  
-  final List<String> _vehicleTypes = ['Sedan', 'SUV', 'Hatchback', 'Truck', 'Motorcycle', 'Other'];
+
+  final List<String> _vehicleTypes = [
+    'Sedan',
+    'SUV',
+    'Hatchback',
+    'Truck',
+    'Motorcycle',
+    'Other'
+  ];
 
   @override
   void dispose() {
@@ -53,15 +62,18 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
         vehicleModel: _vehicleModelController.text.trim(),
         vehicleLicensePlateNumber: _licensePlateController.text.trim(),
         vehicleType: _vehicleType,
-        vehicleRFIDTagId: _rfidTagController.text.trim().isEmpty ? null : _rfidTagController.text.trim(),
+        vehicleRFIDTagId: _rfidTagController.text.trim().isEmpty
+            ? null
+            : _rfidTagController.text.trim(),
         vehicleColor: _vehicleColorController.text.trim(),
       );
 
       // Pass the vehicle data back to the parent
       widget.onVehicleAdded(vehicleModel);
-      
-      // Navigate back
+
+      // Navigate back and return to prevent further code execution
       Navigator.pop(context);
+      return;
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceFirst('Exception: ', '');
@@ -101,7 +113,6 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                 ),
               ),
               SizedBox(height: 24),
-              
               _buildInputField(
                 controller: _vehicleNameController,
                 label: "Vehicle Name",
@@ -113,7 +124,6 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                   return null;
                 },
               ),
-              
               _buildInputField(
                 controller: _vehicleModelController,
                 label: "Vehicle Model",
@@ -125,7 +135,6 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                   return null;
                 },
               ),
-              
               _buildInputField(
                 controller: _licensePlateController,
                 label: "License Plate Number",
@@ -137,7 +146,6 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                   return null;
                 },
               ),
-              
               _buildDropdown(
                 label: "Vehicle Type",
                 value: _vehicleType,
@@ -150,14 +158,12 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                   }
                 },
               ),
-              
               _buildInputField(
                 controller: _rfidTagController,
                 label: "RFID Tag ID (Optional)",
                 hint: "Enter RFID tag ID if available",
                 validator: null, // Optional field
               ),
-              
               _buildInputField(
                 controller: _vehicleColorController,
                 label: "Vehicle Color",
@@ -169,9 +175,7 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                   return null;
                 },
               ),
-              
               SizedBox(height: 24),
-              
               if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
@@ -180,7 +184,6 @@ class _GuestVehicleRegistrationPageState extends State<GuestVehicleRegistrationP
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
-              
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
