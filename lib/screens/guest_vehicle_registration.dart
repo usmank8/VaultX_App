@@ -68,22 +68,16 @@ class _GuestVehicleRegistrationPageState
         vehicleColor: _vehicleColorController.text.trim(),
       );
 
-      // Pass the vehicle data back to the parent
-      widget.onVehicleAdded(vehicleModel);
-
-      // Navigate back and return to prevent further code execution
-      Navigator.pop(context);
+      Navigator.pop(context, vehicleModel);
       return;
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      });
-    } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
         });
       }
+    } finally {
+      // Do not call setState here after pop
     }
   }
 
@@ -197,7 +191,15 @@ class _GuestVehicleRegistrationPageState
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: _isLoading
-                      ? UnderReviewScreen()
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          ),
+                        )
                       : Text(
                           "Add Vehicle",
                           style: TextStyle(fontWeight: FontWeight.bold),

@@ -6,7 +6,7 @@ import 'package:vaultx_solution/widgets/custom_app_bar.dart';
 
 class AllGuestsScreen extends StatefulWidget {
   final List<GuestModel> guests;
-  
+
   const AllGuestsScreen({
     Key? key,
     required this.guests,
@@ -20,19 +20,20 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
   List<GuestModel> _filteredGuests = [];
   String _searchQuery = '';
   String _filterOption = 'All'; // 'All', 'Upcoming', 'Past'
-  
+
   @override
   void initState() {
     super.initState();
     _filteredGuests = widget.guests;
   }
-  
+
   void _filterGuests() {
     setState(() {
       _filteredGuests = widget.guests.where((guest) {
         // Apply search filter
-        final nameMatches = guest.guestName.toLowerCase().contains(_searchQuery.toLowerCase());
-        
+        final nameMatches =
+            guest.guestName.toLowerCase().contains(_searchQuery.toLowerCase());
+
         // Apply status filter
         bool statusMatches = true;
         if (_filterOption == 'Upcoming') {
@@ -40,7 +41,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
         } else if (_filterOption == 'Past') {
           statusMatches = guest.eta.isBefore(DateTime.now());
         }
-        
+
         return nameMatches && statusMatches;
       }).toList();
     });
@@ -70,7 +71,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
               ),
             ),
           ),
-          
+
           // Search and filter bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -98,7 +99,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
                     },
                   ),
                 ),
-                
+
                 // Filter dropdown
                 PopupMenuButton<String>(
                   icon: Icon(Icons.filter_list, color: Color(0xFFE57373)),
@@ -126,7 +127,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
               ],
             ),
           ),
-          
+
           // Filter chips
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -181,7 +182,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
               ],
             ),
           ),
-          
+
           // Guest list
           Expanded(
             child: _filteredGuests.isEmpty
@@ -208,7 +209,8 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const GuestRegistrationForm(),
+                                builder: (context) =>
+                                    const GuestRegistrationForm(),
                               ),
                             ).then((_) => Navigator.pop(context));
                           },
@@ -217,7 +219,8 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFD6A19F),
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                           ),
                         ),
                       ],
@@ -252,7 +255,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
   Widget _buildGuestCard(GuestModel guest) {
     final now = DateTime.now();
     final isUpcoming = guest.eta.isAfter(now);
-    
+
     return Card(
       margin: EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -298,7 +301,8 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
                           ),
                           SizedBox(width: 4),
                           Text(
-                            DateFormat('MMM dd, yyyy - hh:mm a').format(guest.eta),
+                            DateFormat('MMM dd, yyyy - hh:mm a')
+                                .format(guest.eta),
                             style: TextStyle(
                               color: Colors.grey.shade600,
                             ),
@@ -311,21 +315,25 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isUpcoming ? Colors.green.shade100 : Colors.grey.shade200,
+                    color: isUpcoming
+                        ? Colors.green.shade100
+                        : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     isUpcoming ? 'Upcoming' : 'Past',
                     style: TextStyle(
-                      color: isUpcoming ? Colors.green.shade800 : Colors.grey.shade700,
+                      color: isUpcoming
+                          ? Colors.green.shade800
+                          : Colors.grey.shade700,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                 ),
               ],
             ),
-            
+
             // Vehicle info if available
             if (guest.vehicleId != null) ...[
               SizedBox(height: 16),
@@ -380,10 +388,13 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
                       ),
                     ),
                     SizedBox(width: 4),
-                    Text(
-                      guest.vehicleColor!,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
+                    Expanded(
+                      child: Text(
+                        guest.vehicleColor!,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -395,7 +406,7 @@ class _AllGuestsScreenState extends State<AllGuestsScreen> {
       ),
     );
   }
-  
+
   Color _getColorFromName(String colorName) {
     // Simple mapping of color names to Color objects
     switch (colorName.toLowerCase()) {

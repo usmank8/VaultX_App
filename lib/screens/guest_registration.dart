@@ -19,18 +19,18 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
   final TextEditingController dateTimeController = TextEditingController();
-  
+
   String _selectedGender = 'Male';
   bool _hasVehicle = false;
   bool _isLoading = false;
   String? _errorMessage;
-  
+
   final ApiService _apiService = ApiService();
-  
+
   final List<String> _genderOptions = ['Male', 'Female', 'Other'];
-  
+
   DateTime _selectedDateTime = DateTime.now().add(Duration(hours: 1));
-  
+
   // Vehicle information
   GuestVehicleModel? _guestVehicle;
 
@@ -38,7 +38,8 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
   void initState() {
     super.initState();
     // Initialize the date time controller with formatted current date and time
-    dateTimeController.text = DateFormat('MMM dd, yyyy - hh:mm a').format(_selectedDateTime);
+    dateTimeController.text =
+        DateFormat('MMM dd, yyyy - hh:mm a').format(_selectedDateTime);
   }
 
   @override
@@ -56,13 +57,13 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(Duration(days: 30)),
     );
-    
+
     if (pickedDate != null) {
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
       );
-      
+
       if (pickedTime != null) {
         setState(() {
           _selectedDateTime = DateTime(
@@ -72,25 +73,29 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
             pickedTime.hour,
             pickedTime.minute,
           );
-          dateTimeController.text = DateFormat('MMM dd, yyyy - hh:mm a').format(_selectedDateTime);
+          dateTimeController.text =
+              DateFormat('MMM dd, yyyy - hh:mm a').format(_selectedDateTime);
         });
       }
     }
   }
 
   void _addVehicle() async {
-    final result = await Navigator.pushReplacement(
+    final vehicle = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => GuestVehicleRegistrationPage(
           onVehicleAdded: (vehicle) {
-            setState(() {
-              _guestVehicle = vehicle;
-            });
+            // Callback not needed if using return value
           },
         ),
       ),
     );
+    if (vehicle != null && mounted) {
+      setState(() {
+        _guestVehicle = vehicle;
+      });
+    }
   }
 
   Future<void> _registerGuest() async {
@@ -113,13 +118,14 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
 
       // Register guest and get QR code
       final String qrCodeImage = await _apiService.registerGuest(guestModel);
-      
+
       if (mounted) {
         // Navigate to confirmation page with QR code
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => GuestConfirmationPage(qrCodeImage: qrCodeImage),
+            builder: (context) =>
+                GuestConfirmationPage(qrCodeImage: qrCodeImage),
           ),
         );
       }
@@ -176,7 +182,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
 
                 // Form fields
                 _buildFormField(
-                  'Name', 
+                  'Name',
                   nameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -186,9 +192,9 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 _buildFormField(
-                  'Contact Number', 
+                  'Contact Number',
                   contactController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -202,7 +208,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Date and time picker
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,9 +234,10 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            suffixIcon: Icon(Icons.calendar_today, color: Color(0xFFE57373)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            suffixIcon: Icon(Icons.calendar_today,
+                                color: Color(0xFFE57373)),
                           ),
                           style: const TextStyle(
                             fontSize: 16,
@@ -242,7 +249,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Gender dropdown
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,7 +296,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Vehicle checkbox
                 Row(
                   children: [
@@ -315,7 +322,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                     ),
                   ],
                 ),
-                
+
                 // Vehicle details (conditional)
                 if (_hasVehicle) ...[
                   const SizedBox(height: 16),
@@ -333,7 +340,9 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                       TextButton(
                         onPressed: _addVehicle,
                         child: Text(
-                          _guestVehicle == null ? 'Add Vehicle' : 'Edit Vehicle',
+                          _guestVehicle == null
+                              ? 'Add Vehicle'
+                              : 'Edit Vehicle',
                           style: TextStyle(
                             color: Color(0xFFE57373),
                             fontWeight: FontWeight.bold,
@@ -343,7 +352,6 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
                   if (_guestVehicle != null) ...[
                     _buildVehicleInfoCard(),
                   ] else ...[
@@ -358,9 +366,9 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                     ),
                   ],
                 ],
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Error message
                 if (_errorMessage != null)
                   Padding(
@@ -376,7 +384,8 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _registerGuest,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD5A3A3), // Pink/rose color
+                      backgroundColor:
+                          const Color(0xFFD5A3A3), // Pink/rose color
                       foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -390,7 +399,8 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
                             height: 20,
                             child: const CircularProgressIndicator(
                               color: Colors.white,
-                              strokeWidth: 2,),
+                              strokeWidth: 2,
+                            ),
                           )
                         : const Text(
                             'Submit',
@@ -421,13 +431,16 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildVehicleInfoRow('Vehicle Name', _guestVehicle?.vehicleName ?? ''),
+          _buildVehicleInfoRow(
+              'Vehicle Name', _guestVehicle?.vehicleName ?? ''),
           _buildVehicleInfoRow('Model', _guestVehicle?.vehicleModel ?? ''),
           _buildVehicleInfoRow('Type', _guestVehicle?.vehicleType ?? ''),
-          _buildVehicleInfoRow('License Plate', _guestVehicle?.vehicleLicensePlateNumber ?? ''),
+          _buildVehicleInfoRow(
+              'License Plate', _guestVehicle?.vehicleLicensePlateNumber ?? ''),
           _buildVehicleInfoRow('Color', _guestVehicle?.vehicleColor ?? ''),
           if (_guestVehicle?.vehicleRFIDTagId != null)
-            _buildVehicleInfoRow('RFID Tag', _guestVehicle?.vehicleRFIDTagId ?? ''),
+            _buildVehicleInfoRow(
+                'RFID Tag', _guestVehicle?.vehicleRFIDTagId ?? ''),
         ],
       ),
     );
@@ -463,7 +476,7 @@ class _GuestRegistrationFormState extends State<GuestRegistrationForm> {
   }
 
   Widget _buildFormField(
-    String label, 
+    String label,
     TextEditingController controller, {
     String? Function(String?)? validator,
   }) {
