@@ -303,7 +303,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             child: _isSaving
-                                ? UnderReviewScreen()
+                                ? CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          )
                                 : Text(
                                     "Save Changes",
                                     style: TextStyle(

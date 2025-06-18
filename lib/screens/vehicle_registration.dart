@@ -212,7 +212,11 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: _isLoading
-                      ? UnderReviewScreen()
+                      ? CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          )
                       : Text(
                           "Submit",
                           style: TextStyle(fontWeight: FontWeight.bold),

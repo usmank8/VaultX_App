@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vaultx_solution/auth/screens/loginscreen.dart';
-import 'package:vaultx_solution/loading/loading.dart';
 import 'package:vaultx_solution/models/create_profile_model.dart';
 import 'package:vaultx_solution/models/update_profile_model.dart';
 import 'package:vaultx_solution/services/api_service.dart';
@@ -8,6 +7,7 @@ import 'package:vaultx_solution/screens/home_page.dart';
 import 'package:vaultx_solution/screens/pending_approval_screen.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRegistrationPage extends StatefulWidget {
   const ProfileRegistrationPage({super.key});
@@ -188,6 +188,9 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
 
     // Debug the token before submission
     _api.debugToken();
+    
+    final prefs = await SharedPreferences.getInstance();
+    final storedEmail = prefs.getString('user_email')?.trim();
 
     // Validate required fields
     if (_firstNameCtrl.text.isEmpty || _lastNameCtrl.text.isEmpty) {
@@ -230,7 +233,7 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
       firstname: _firstNameCtrl.text.trim(),
       lastname: _lastNameCtrl.text.trim(),
       phonenumber: _phoneCtrl.text.trim(),
-      email: _existingProfile?.email ?? '',
+      email: storedEmail ?? '',
       cnic: _cnicCtrl.text.trim(),
       address: _addressCtrl.text.trim(),
       block: _blockCtrl.text.trim(),
@@ -422,7 +425,11 @@ class _ProfileRegistrationPageState extends State<ProfileRegistrationPage> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _loading
-                    ? const UnderReviewScreen()
+                    ? CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          )
                     : Text(
                         _completionPercentage == 1.0
                             ? "Submit"

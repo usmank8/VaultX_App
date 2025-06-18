@@ -95,16 +95,17 @@ class ApiService {
     if (res.statusCode == 200 || res.statusCode == 201) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
       final token = body['token'] as String;
-      // Save token
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt_token', token);
+      await prefs.setString('user_email', dto.email); // store user email
 
-      // Save isApprovedBySocietyAdmin flag
       if (body.containsKey('isApprovedBySocietyAdmin')) {
-        await prefs.setBool('isApprovedBySocietyAdmin',
-            body['isApprovedBySocietyAdmin'] == true);
+        await prefs.setBool(
+          'isApprovedBySocietyAdmin',
+          body['isApprovedBySocietyAdmin'] == true,
+        );
       }
-
       return token;
     } else {
       throw Exception('Login failed (${res.statusCode}): ${res.body}');
@@ -406,6 +407,20 @@ class ApiService {
         errorMessage = 'Resend OTP failed (${res.statusCode}): ${res.body}';
       }
       throw Exception(errorMessage);
+    }
+  }
+
+  /// Retrieve the stored user email from SharedPreferences
+  Future<String?> getUserEmail() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.getString('user_email');
+      debugPrint(
+          'User email from SharedPreferences: ${email != null ? 'Found' : 'Not found'}');
+      return email;
+    } catch (e) {
+      debugPrint('Error accessing user_email: $e');
+      return null;
     }
   }
 }

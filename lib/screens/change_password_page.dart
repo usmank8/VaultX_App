@@ -251,7 +251,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ? SizedBox(
                           height: 20,
                           width: 20,
-                          child:UnderReviewScreen()
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          ),
                         )
                       : Text(
                           "Update Password",
